@@ -1,0 +1,6 @@
+{
+  "python.analysis.extraPaths": [
+    "./backend/vendor/imaginAIry",
+  ],
+  "python.formatting.provider": "black"
+}

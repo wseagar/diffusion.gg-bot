@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  diffusion:
+    build: .
+    command: "python -u ./src/main.py"
+    container_name: "diffusion-gg"
+    restart: "always"
+    environment:
+      - IMAGINAIRY_SAFETY_MODE=classify
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    env_file:
+      - ../.env

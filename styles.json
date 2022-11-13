@@ -1,0 +1,96 @@
+[
+  { "name": "none", "value": "" },
+  {
+    "name": "digital_art",
+    "value": ", digital art, artstation, concept art, greg rutkowski"
+  },
+  {
+    "name": "photo",
+    "value": ", Canon EOS R3, 35mm, f/1.4, ISO 200, 1/160s, 8K, RAW, unedited, symmetrical balance, in-frame"
+  },
+  {
+    "name": "cute",
+    "value": ", extremely cute, extremely fluffy, very big eyes, digital illustration, by pixar and miyazak, cartoon creature, vivid color, soft light, nice, masterpiece, trending on artstation, very detailed, 3 d render, by pixar and miyazak"
+  },
+  {
+    "name": "landscape",
+    "value": ", panoramic landscape, cinematic view, epic sky, detailed, high detail, warm lighting, godrays, vivid"
+  },
+  {
+    "name": "fantasy",
+    "value": ", fantasy, dnd, unreal 5, hyperrealistic, octane render, cosplay, rpg portrait, dynamic lighting, intricate detail, global illumination, ray tracing, hdr"
+  },
+  {
+    "name": "cyberpunk",
+    "value": ", cyberpunk, bladerunner, cyberpunk, hyper-realistic environment, epic concept art"
+  },
+  {
+    "name": "anime",
+    "value": ", anime, cgsociety, fantasy art, 2 d game art, concept art, anime studio and pixar animation studio and disney"
+  },
+  {
+    "name": "propaganda_poster",
+    "value": ", propaganda poster, travel poster, offset printing"
+  },
+  {
+    "name": "pop_art",
+    "value": ", half tone, primary colours, cmyk, comic, retro"
+  },
+  {
+    "name": "vaporwave",
+    "value": ", vaporwave, cyan, magenta, retro, 4k, palm trees, greek statues, highly detailed"
+  },
+  {
+    "name": "psychedelic",
+    "value": ", psychedelic, acid, vibrant, primary colours, tie dye, rainbow, bold"
+  },
+  {
+    "name": "photo_black_and_white",
+    "value": ", vignette, cinematic, monochrome, contrast, dark, deep shadows, 8K, RAW, unedited, symmetrical balance, in-frame"
+  },
+  {
+    "name": "tokyo",
+    "value": ", shibuya crossing, akihabra, bright, saturated colour, vibrant, photo, realistic, canon eos, nikon"
+  },
+  {
+    "name": "papercraft",
+    "value": ", vector, flat, craft paper, block colour, simple, clean, low detail, sharp edges"
+  },
+  {
+    "name": "smokebomb",
+    "value": ", coloured smoke, bright smoke, dye, powder, baloon, bright, vibrant, happy"
+  },
+  {
+    "name": "art_class",
+    "value": ", water colour, pastel, pencil, underexposed, low contrast, light, dreamy"
+  },
+  {
+    "name": "crews_crew",
+    "value": " standing beside terry crews standing beside terry crews"
+  },
+  {
+    "name": "sculpture",
+    "value": ", sculpture, marble, stone, carved, hand carved, highly detailed, photorealistic, deep shadows, cinematic, canon eos, canon 5d "
+  },
+  {
+    "name": "spooky",
+    "value": ", strong vignette, vignette, charcoal, dark, black, red, spooky, scary, ragged, evil, mean, dystopian"
+  },
+  {
+    "name": "steampunk",
+    "value": ", steampunk, cybernetic, biomechanical, robotic, damask pattern, symmetrical, 3 d model, very coherent symmetrical artwork, unreal engine realistic render, 8 k, micro detail, white ceramic material and clear glass with gold accents, iridescent black background, intricate, elegant, highly detailed, high contrast, digital painting, artstation, smooth, sharp focus, illustration"
+  },
+  {
+    "name": "royal",
+    "value": ", king, bejeweled crown, royal, regal, oil painting, highly detailed, trending, 8k"
+  },
+  {
+    "name": "poster",
+    "value": ", screen print poster, 1968 psychedelic, hippie style"
+  },
+  {
+    "name": "tokyo_dark",
+    "value": ". leica m5, cinestill film, 35mm, rain, reflections, neon lights, insanely detailed, volumetric lighting, 4k uhd, octane render, shibuya crossing, akihabra, bright, saturated colour, vibrant, photo, realistic, canon eos, nikon"
+  },
+  { "name": "1950s_ad", "value": ", retrofuturistic, 1950s, advertisement" }
+]

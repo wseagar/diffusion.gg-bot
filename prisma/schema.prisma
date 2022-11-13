@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model discord_servers {
+  id             String   @id @db.Uuid @default(uuid())
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  discord_id     String @unique
+  discord_name   String
+  nsfw_filter    Boolean? @default(true)
+  blocked        Boolean? @default(false)
+  blocked_reason String?
+  server_credits Decimal  @default(0) @db.Decimal
+}
+
+model discord_users {
+  id                     String   @id @db.Uuid @default(uuid())
+  created_at             DateTime @default(now()) @db.Timestamptz(6)
+  discord_id             String   @unique
+  discord_name           String
+  is_subscriber          Boolean  @default(false)
+  user_credits           Decimal  @default(0) @db.Decimal
+  active                 Boolean  @default(true)
+  first_message_sent     Boolean  @default(false)
+  stripe_customer_id     String?
+  free_credits_timestamp DateTime @default(now()) @db.Timestamptz(6)
+  images_generated       Decimal  @default(0) @db.Decimal
+  blocked                Boolean? @default(false)
+  blocked_reason         String?
+  nsfw_filter            Boolean  @default(true)
+  subscription_timestamp DateTime? @db.Timestamptz(6)
+
+  @@index([discord_id], map: "index_discord_users_on_discord_id")
+}
+
+model images {
+  id     String  @id @db.Uuid @default(uuid())
+  job_id String? @db.Uuid
+  uri    String?
+  nsfw   Boolean @default(false)
+
+  @@index([job_id], map: "index_images_on_job_id")
+}
+
+model jobs {
+  id                 String    @id @db.Uuid @default(uuid())
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  started_at         DateTime? @db.Timestamptz(6)
+  running            Boolean   @default(false)
+  args               Json?
+  logs               String?
+  done               Boolean   @default(false)
+  prio               Decimal   @default(0) @db.Decimal
+  discord_message_id String?
+  results            Json?
+  is_deleted         Boolean   @default(false)
+
+  @@index([running], map: "index_jobs_on_running")
+}

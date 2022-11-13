@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  diffusion:
+    build: .
+    command: "/bin/bash"
+    container_name: "diffusion-gg"
+    restart: "always"
+    volumes:
+      - .:/diffusion:cached
+    environment:
+      - IMAGINAIRY_SAFETY_MODE=classify
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    env_file:
+      - ../.env.dev

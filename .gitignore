@@ -1,0 +1,4 @@
+.env
+.env.prod
+node_modules/
+backend/cache
