@@ -84,7 +84,7 @@ router.chat("draw_one", (interaction) => processDraw(interaction, "draw_one"));
 router.chat("describe", (interaction) => processDescribe(interaction));
 router.chat("credits", (interaction) => processCredits(interaction));
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds], shards: "auto" });
 client.once("ready", () => {
   console.log("Discord: Ready!");
 });

@@ -8,7 +8,6 @@
     "migrate-discord": "ts-node ./scripts/migrate_discord",
     "migrate-db-prod": "npx prisma migrate deploy",
     "airtable": "ts-node ./scripts/airtable.ts",
-    "prepare": "husky install",
     "format": "prettier --write -c ."
   },
   "dependencies": {
@@ -29,20 +28,19 @@
     "openai": "^3.0.0",
     "pg": "^8.8.0",
     "stripe": "^10.6.0",
-    "uuid": "^8.3.2"
-  },
-  "devDependencies": {
+    "uuid": "^8.3.2",
+    "prisma": "^4.4.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
     "@types/node-fetch": "^2.6.2",
     "@types/pg": "^8.6.5",
     "@types/uuid": "^8.3.4",
     "husky": "^8.0.1",
     "json-schema-to-ts": "^2.5.5",
     "lint-staged": "^13.0.3",
-    "prettier": "^2.7.1",
-    "prisma": "^4.4.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "prettier": "^2.7.1"
   },
+  "devDependencies": {},
   "lint-staged": {
     "*.{js,ts,css,md}": "prettier --write"
   }
