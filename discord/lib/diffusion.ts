@@ -208,28 +208,31 @@ async function canRunTask(
   }
 
   if (!isDiffusionDiscord(interaction) && !dbUser.is_subscriber) {
-    const success = await useDiscordCredit(dbUser.id, dbServer?.id ?? null, credits);
-    if (!success) {
-      const baseEmbed = {
-        color: Colors.Blurple,
-        title: "You have hit your usage limit",
-        description: `Each day you get 10 free credits.\nUse /credits to see when they refresh.`,
-      };
+    const upgradeMessage = `<@${interaction.user.id}>, due to people abusing the this bot to make illegal material, it is restricted to the diffusion.gg discord for now. Join https://discord.gg/ZaEJxW4rU6 to use it.`;
+    await interaction.editReply(upgradeMessage);
+    return false;
+    // const success = await useDiscordCredit(dbUser.id, dbServer?.id ?? null, credits);
+    // if (!success) {
+    //   const baseEmbed = {
+    //     color: Colors.Blurple,
+    //     title: "You have hit your usage limit",
+    //     description: `Each day you get 10 free credits.\nUse /credits to see when they refresh.`,
+    //   };
 
-      const addCreditsRows = await makeBuyCreditsButtons(interaction, dbUser, dbServer);
+    //   const addCreditsRows = await makeBuyCreditsButtons(interaction, dbUser, dbServer);
 
-      await interaction.editReply({ content: "", embeds: [baseEmbed], components: [...addCreditsRows] });
-      await interaction.user.send({
-        content: "https://discord.gg/ZaEJxW4rU6",
-        embeds: [baseEmbed],
-        components: [...addCreditsRows],
-      });
+    //   await interaction.editReply({ content: "", embeds: [baseEmbed], components: [...addCreditsRows] });
+    //   await interaction.user.send({
+    //     content: "https://discord.gg/ZaEJxW4rU6",
+    //     embeds: [baseEmbed],
+    //     components: [...addCreditsRows],
+    //   });
 
-      // const upgradeMessage = `<@${interaction.user.id}>, you have hit your daily usage limit.\nUse /credits to get more.\n`;
-      // await interaction.editReply(upgradeMessage);
+    //   // const upgradeMessage = `<@${interaction.user.id}>, you have hit your daily usage limit.\nUse /credits to get more.\n`;
+    //   // await interaction.editReply(upgradeMessage);
 
-      return false;
-    }
+    //   return false;
+    // }
   }
   return true;
 }
