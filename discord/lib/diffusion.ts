@@ -393,6 +393,20 @@ export async function generateImage(options: GenerateImageOptionsNew) {
     }),
   });
   console.log(response, response.status, response.statusText);
+  if (response.status !== 200) {
+    try {
+      const json = await response.json();
+      console.log(json);
+      const { detail } = json;
+      await interaction.editReply(`${replyBase} (error: ${detail})`);
+      return;
+    } catch (e) {
+      console.log("Error calling dreambooth");
+      console.log(e);
+      await interaction.editReply(`${replyBase} (timed out... please try again!)`);
+      return;
+    }
+  }
   const json = await response.json();
   console.log(json);
   const { job_id } = json;
