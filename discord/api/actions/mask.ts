@@ -1,6 +1,4 @@
-import {
-  ModalSubmitInteraction
-} from "discord.js";
+import { ModalSubmitInteraction } from "discord.js";
 import { getJob, getImages } from "../../../rest/db";
 import { getDbServer, generateImage } from "../../lib/diffusion";
 import { getCFGOnSampler, MAX_STEPS, randomIntFromInterval } from "../../lib/utils";
@@ -46,32 +44,32 @@ export async function processMaskImage(interaction: ModalSubmitInteraction) {
     imageStrength = 0.5;
   }
 
-  await generateImage({
-    img2img_strength: imageStrength,
-    interaction,
-    prompt: newPrompt,
-    prompt_engineer: false,
-    type: "txt2mask",
-    n_samples: 2,
-    //refine should use the most steps by default due to only doing 1 image at a time
-    ddim_steps: MAX_STEPS,
-    seed:
-      customId === "option_upscale" || customId === "option_fix_face"
-        ? job.args.seed
-        : randomIntFromInterval(1, 100000),
-    reroll: true,
-    style: job.args.style,
-    discord_response: job.args.discord_response,
-    width: job.args?.width ?? 512,
-    height: job.args?.height ?? 512,
-    image_url: image.uri ?? undefined,
-    scale: job.args.scale ?? getCFGOnSampler(job.args.sampler ?? "ddim"),
-    negative_prompt: job.args.negative_prompt ?? "",
-    upscale: customId === "option_upscale" ? true : false,
-    fix_faces: customId === "option_fix_face" ? true : false,
-    // old jobs without a sampler would of been ddim
-    sampler: job.args.sampler ?? "ddim",
-    mask_prompt: promptMask,
-    mask_mode: maskMode,
-  });
+  // await generateImage({
+  //   img2img_strength: imageStrength,
+  //   interaction,
+  //   prompt: newPrompt,
+  //   prompt_engineer: false,
+  //   type: "txt2mask",
+  //   n_samples: 2,
+  //   //refine should use the most steps by default due to only doing 1 image at a time
+  //   ddim_steps: MAX_STEPS,
+  //   seed:
+  //     customId === "option_upscale" || customId === "option_fix_face"
+  //       ? job.args.seed
+  //       : randomIntFromInterval(1, 100000),
+  //   reroll: true,
+  //   style: job.args.style,
+  //   discord_response: job.args.discord_response,
+  //   width: job.args?.width ?? 512,
+  //   height: job.args?.height ?? 512,
+  //   image_url: image.uri ?? undefined,
+  //   scale: job.args.scale ?? getCFGOnSampler(job.args.sampler ?? "ddim"),
+  //   negative_prompt: job.args.negative_prompt ?? "",
+  //   upscale: customId === "option_upscale" ? true : false,
+  //   fix_faces: customId === "option_fix_face" ? true : false,
+  //   // old jobs without a sampler would of been ddim
+  //   sampler: job.args.sampler ?? "ddim",
+  //   mask_prompt: promptMask,
+  //   mask_mode: maskMode,
+  // });
 }

@@ -31,6 +31,7 @@ import {
   cleanupOldJobs,
   DBDiscordUser,
   devCompleteDescribeJob,
+  completeJob,
 } from "../../rest/db";
 import Stripe from "stripe";
 import { getPromptSuffix } from "../../rest/static";
@@ -205,7 +206,7 @@ async function canRunTask(
       return false;
     }
   }
-  
+
   if (!isDiffusionDiscord(interaction) && !dbUser.is_subscriber) {
     const success = await useDiscordCredit(dbUser.id, dbServer?.id ?? null, credits);
     if (!success) {
@@ -213,16 +214,20 @@ async function canRunTask(
         color: Colors.Blurple,
         title: "You have hit your usage limit",
         description: `Each day you get 10 free credits.\nUse /credits to see when they refresh.`,
-      }
-    
+      };
+
       const addCreditsRows = await makeBuyCreditsButtons(interaction, dbUser, dbServer);
-    
+
       await interaction.editReply({ content: "", embeds: [baseEmbed], components: [...addCreditsRows] });
-      await interaction.user.send({ content: "https://discord.gg/ZaEJxW4rU6", embeds: [baseEmbed], components: [...addCreditsRows] });
+      await interaction.user.send({
+        content: "https://discord.gg/ZaEJxW4rU6",
+        embeds: [baseEmbed],
+        components: [...addCreditsRows],
+      });
 
       // const upgradeMessage = `<@${interaction.user.id}>, you have hit your daily usage limit.\nUse /credits to get more.\n`;
       // await interaction.editReply(upgradeMessage);
-      
+
       return false;
     }
   }
@@ -252,16 +257,19 @@ export async function generateImg2Prompt(options: DescribeImageOptions) {
 
   await interaction.editReply("Describing image (waiting...)");
 
-  const jobId = await createJob({
-    type: "img2prompt",
-    img2prompt_url: img2prompt_url,
-    discord_user: interaction.user.id,
-    discord_name: interaction.user.username,
-    user_id: dbUser.id,
-    discord_server_id: interaction.guild?.id,
-    discord_server_name: interaction.guild?.name,
-    server_id: dbServer ? dbServer.id : undefined,
-  }, getPriority(interaction));
+  const jobId = await createJob(
+    {
+      type: "img2prompt",
+      img2prompt_url: img2prompt_url,
+      discord_user: interaction.user.id,
+      discord_name: interaction.user.username,
+      user_id: dbUser.id,
+      discord_server_id: interaction.guild?.id,
+      discord_server_name: interaction.guild?.name,
+      server_id: dbServer ? dbServer.id : undefined,
+    },
+    getPriority(interaction),
+  );
 
   if (process.env.STAGE === "dev") {
     await devCompleteDescribeJob(jobId);
@@ -320,18 +328,27 @@ export async function generateImg2Prompt(options: DescribeImageOptions) {
   });
 }
 
-export async function generateImage(options: GenerateImageOptions) {
-  console.log("[GENERATE]", { ...options, interaction: undefined });
-  const { interaction, prompt, prompt_engineer_seed, n_samples, ddim_steps, seed, reroll, style, img2img_strength, sampler, type, prompt_engineer } = options;
-  let { discord_response } = options;
-  if (!discord_response) {
-    discord_response = prompt;
-  }
+type GenerateImageOptionsNew = {
+  interaction: DiffusionInteraction;
+  prompt: string;
+  n_samples: number;
+};
 
-  const seedToUse = seed !== null ? seed : 42;
+export async function generateImage(options: GenerateImageOptionsNew) {
+  console.log("[GENERATE]", { ...options, interaction: undefined });
+  const { interaction, prompt, n_samples } = options;
+  // let { discord_response } = options;
+  // if (!discord_response) {
+  //   discord_response = prompt;
+  // }
+
+  // const seedToUse = seed !== null ? seed : 42;
+  const seedToUse = 42;
 
   const dbUser = await getDiscordUser(interaction.user.id, interaction.user.username);
   const dbServer = await getDbServer(interaction);
+
+  await cleanupOldJobs();
 
   // NOTE: Sideeffect heavy function that wraps a ton of shit (credits, subscription, etc).
   //       Be careful when modifying.
@@ -339,94 +356,177 @@ export async function generateImage(options: GenerateImageOptions) {
   if (!(await canRunTask(interaction, dbUser, dbServer, n_samples))) {
     return;
   }
-  const styleString = style !== "none" ? ` [${style}]` : "";
+  //const styleString = style !== "none" ? ` [${style}]` : "";
   // const engineeredPromptNotify = prompt_engineer === true || prompt_engineer_seed != undefined ? " [Prompt Enhancer]" : ""
-  const replyBase = `\`${discord_response}${styleString}\` - <@${interaction.user.id}>`;
+  // const replyBase = `\`${discord_response}${styleString}\` - <@${interaction.user.id}>`;
+  const replyBase = `\`${prompt}\` - <@${interaction.user.id}>`;
   await interaction.editReply(replyBase + " (waiting...)");
 
-  const addStyle = `${prompt}${getPromptSuffix(style)}`;
+  // const addStyle = `${prompt}${getPromptSuffix(style)}`;
+  const addStyle = `${prompt}`;
 
   // await checkNsfl(prompt, `${interaction.user.username} - ${interaction.guild?.name}`, false);
 
   await incrementImagesGenerated(dbUser.id);
-  const jobId = await createJob({
-    raw_prompt: prompt,
-    prompt: addStyle,
-    prompt_engineer: prompt_engineer,
-    prompt_engineer_seed: prompt_engineer_seed,
-    style,
-    ddim_steps,
-    n_samples,
-    width: options.width,
-    height: options.height,
-    seed: seedToUse,
-    type: type,
-    discord_user: interaction.user.id,
-    discord_name: interaction.user.username,
-    user_id: dbUser.id,
-    discord_server_id: interaction.guild?.id,
-    discord_server_name: interaction.guild?.name,
-    server_id: dbServer ? dbServer.id : undefined,
-    discord_response: discord_response,
-    img2img_url: options.image_url,
-    img2img_strength: options.img2img_strength,
-    scale: options.scale,
-    negative_prompt: options.negative_prompt ?? "",
-    upscale: options.upscale,
-    fix_faces: options.fix_faces,
-    sampler: options.sampler,
-    mask_mode: options.mask_mode,
-    mask_prompt: options.mask_prompt,
-  }, getPriority(interaction));
+  const response = await fetch("https://api.dreamlook.ai/image_gen", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${process.env.DREAMLOOK_API_KEY}`,
+    },
+    body: JSON.stringify({
+      prompt: addStyle,
+      negative_prompt: "(nudity, porn, nsfw:1.3)",
+      num_samples: n_samples,
+      width: 512,
+      height: 512,
+      num_inference_steps: 20,
+      enable_hrf: false,
+      scheduler_type: "dpm++",
+      seed: 42,
+      model_type: "sd-v1",
+      guidance_scale: 7.5,
+      base_model: "cyberrealistic-v3-1",
+    }),
+  });
+  console.log(response, response.status, response.statusText);
+  const json = await response.json();
+  console.log(json);
+  const { job_id } = json;
+  console.log(job_id);
 
-  if (process.env.STAGE === "dev") {
-    await devCompleteJob(jobId);
-  } else {
-    await sleep(6);
+  // type GenerateImageOptions = {
+  //   interaction: DiffusionInteraction;
+  //   prompt: string;
+  //   prompt_engineer_seed?: number;
+  //   prompt_engineer: boolean;
+  //   negative_prompt: string;
+  //   n_samples: number;
+  //   ddim_steps: number;
+  //   seed: number | null;
+  //   img2img_strength?: number;
+  //   reroll: boolean;
+  //   style: string;
+  //   discord_response?: string;
+  //   is_draw_one?: boolean;
+  //   width: number;
+  //   height: number;
+  //   image_url?: string;
+  //   // guidance_scale
+  //   scale: number;
+  //   upscale: boolean;
+  //   fix_faces: boolean;
+  //   sampler: string;
+  //   type: string;
+  //   mask_mode?: "keep" | "replace";
+  //   mask_prompt?: string;
+  // };
+
+  const diffusionJobId = await createJob(
+    {
+      raw_prompt: prompt,
+      prompt: addStyle,
+      prompt_engineer: false,
+      prompt_engineer_seed: undefined,
+      style: "",
+      ddim_steps: 20,
+      n_samples: n_samples,
+      width: 512,
+      height: 512,
+      seed: 42,
+      type: "dreamlook",
+      discord_user: interaction.user.id,
+      discord_name: interaction.user.username,
+      user_id: dbUser.id,
+      discord_server_id: interaction.guild?.id,
+      discord_server_name: interaction.guild?.name,
+      server_id: dbServer ? dbServer.id : undefined,
+      discord_response: prompt,
+      img2img_url: undefined,
+      img2img_strength: undefined,
+      scale: 1,
+      negative_prompt: "(nudity, porn, nsfw:1.3)" ?? "",
+      upscale: false,
+      fix_faces: false,
+      sampler: "dpm++",
+      mask_mode: undefined,
+      mask_prompt: undefined,
+    },
+    getPriority(interaction),
+  );
+
+  async function getDreamlookJob(jobId: string) {
+    try {
+      const response = await fetch(`https://api.dreamlook.ai/jobs/image-gen/${jobId}`, {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${process.env.DREAMLOOK_API_KEY}`,
+        },
+      });
+      console.log(response, response.status, response.statusText);
+      const json = await response.json();
+      console.log(json);
+      return json;
+    } catch (e) {
+      console.log("Error calling dreambooth");
+      console.log(e);
+      return null;
+    }
   }
 
-  let job = await getJob(jobId);
-
-  let prevTotal = 999999999999999;
-  let prevPos = 999999999999999;
+  let job;
   let i = 0;
-  await cleanupOldJobs();
-  do {
+
+  while (i < 100) {
     if (i > 100) {
       await interaction.editReply(`${replyBase} (timed out... please try again!)`);
       return;
     }
 
     await sleep(2500);
-    job = await getJob(jobId);
+    job = await getDreamlookJob(job_id);
     if (!job) {
       await interaction.editReply(`${replyBase} (timed out... please try again!)`);
       return;
     }
+    console.log(job_id, job.state, i);
 
-    const { total, position } = await getQueueLength(job.created_at, job.prio);
-    if (total !== prevTotal || position !== prevPos) {
-      if (position === 0) {
-        await interaction.editReply(`${replyBase} (running...)`);
-      } else {
-        await interaction.editReply(`${replyBase} (position ${position})`);
-      }
+    if (job.state === "running") {
+      await interaction.editReply(`${replyBase} (running...)`);
+    } else if (job.state === "queued") {
+      await interaction.editReply(`${replyBase} (queued...)`);
+    } else if (job.state === "success") {
+      break;
+    } else {
+      console.error("Unknown state, likely failed?", job_id, job.state);
+      throw new Error("Unknown state");
     }
-    prevTotal = total;
-    prevPos = position;
 
     i += 1;
-  } while (!job.done);
+  }
 
-  const images = await getImages(jobId);
+  // "image_gen_results": [
+  //   {
+  //       "checkpoint_id": null,
+  //       "config_idx": 0,
+  //       "generated_images": [
+  //           {
+  //               "generated_image_id": "1c90052b",
+  //               "url": "https://storage.googleapis.com/nyxai-standard-usc2/images/generated_images/ig_9b309880/ig_9b309880_1c90052b.png?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=174139095815-compute%40developer.gserviceaccount.com%2F20230815%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20230815T015209Z&X-Goog-Expires=3600&X-Goog-SignedHeaders=host&X-Goog-Signature=b87b71c40798894f4c9845a12c5e8847c0d0d5a2fae8c727cdae63fed13f1a60c95c84e925c4d8758f89d8a0eb09673076f3b981410818063188d4f2514df7674bf334f0cef09383c83054a43f98b5fbd792f80f0a58c51e1d9951835645df1968448183db6dbd3665bdecc74cbcecb3abf01fb446d7e2353005af8aab2ebfe6e3b00fe4ddbc62b4dfdc39c9c38cb110459b2b761dcabf0d74d49dc38b64a619b14bad12bef62c99ee25362da6a4b3408180af1726906b3360676f58fadacebc419ab749d9d5ce6ec5c6252434aa65b82d1c7bc9975ea6122908323119fb493cf77a23f32f2e70056013a97d8e1fc67e73a0c39eb3ad24205c49757fc72fe780",
+  //               "seed": 42,
+  //               "generation_idx": 0
+  //           },
+
+  const images = job?.image_gen_results[0].generated_images;
   if (!images || images.length === 0) {
     await interaction.editReply(
       `Sorry! Something went wrong, if you are using a starting image make sure it has 512x512 dimensions`,
     );
     return;
   }
-  const imageUrls = images.map((img) => img.uri) as string[];
-  const imageNSFW = images.map((img) => img.nsfw);
+  const imageUrls = images.map((img: any) => img.url) as string[];
+  await completeJob(diffusionJobId, imageUrls);
 
   //console.log(results);
   // console.log(imageUrls);
@@ -443,20 +543,20 @@ export async function generateImage(options: GenerateImageOptions) {
   if (isDiffusionDiscord(interaction)) {
     components.push(shortcutsRow);
   }
-  components.push(Buttons.tweakingRow);
+  // components.push(Buttons.tweakingRow);
   components.push(infoRow);
 
   const embeds = imageUrls.map((img, idx) => {
     let blocked = false;
-    if (dbUser.nsfw_filter) {
-      blocked = imageNSFW[idx];
-    }
-    
+    // if (dbUser.nsfw_filter) {
+    //   blocked = imageNSFW[idx];
+    // }
+
     if (blocked) {
       return {
         color: Colors.Blurple,
         description:
-          "This image has been blocked because it was detected to be **NSFW Content**.\nA Diffusion.gg subscription is required to view NSFW content.\nUse \`/credits`\ for more info.",
+          "This image has been blocked because it was detected to be **NSFW Content**.\nA Diffusion.gg subscription is required to view NSFW content.\nUse `/credits` for more info.",
       };
     }
 
@@ -467,15 +567,15 @@ export async function generateImage(options: GenerateImageOptions) {
       },
     };
   });
-  if (options.image_url) {
-    const baseEmbed = {
-      color: Colors.Blurple,
-      title: options.image_url ? "Initial Image" : "",
-      url: options.image_url ? options.image_url : "",
-      description: "",
-    };
-    embeds.unshift(baseEmbed);
-  }
+  // if (options.image_url) {
+  //   const baseEmbed = {
+  //     color: Colors.Blurple,
+  //     title: options.image_url ? "Initial Image" : "",
+  //     url: options.image_url ? options.image_url : "",
+  //     description: "",
+  //   };
+  //   embeds.unshift(baseEmbed);
+  // }
 
   const followup = await interaction.followUp({
     content: replyBase,
@@ -483,6 +583,6 @@ export async function generateImage(options: GenerateImageOptions) {
     embeds: embeds,
   });
   // await drew(interaction);
-  await setJobMessageId(job.id, followup.id);
+  await setJobMessageId(diffusionJobId, followup.id);
   await interaction.editReply(`${replyBase} (done)`);
 }

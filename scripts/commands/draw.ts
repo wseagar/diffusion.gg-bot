@@ -83,90 +83,91 @@ const maskModeOptions = [
 ];
 
 function addDrawOptions(builder: SlashCommandBuilder) {
-  return builder
-    .addStringOption((option) => option.setName("prompt").setDescription("Enter your prompt").setRequired(true))
-    .addStringOption((option) =>
-      option
-        .setName("orientation")
-        .setDescription("Change the images orientation")
-        .setChoices(...orientationChoices)
-        .setRequired(false),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("sampler")
-        .setDescription("Choose a sampler")
-        .setChoices(...samplerChoices),
-    )
+  return builder.addStringOption((option) =>
+    option.setName("prompt").setDescription("Enter your prompt").setRequired(true),
+  );
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("orientation")
+  //     .setDescription("Change the images orientation")
+  //     .setChoices(...orientationChoices)
+  //     .setRequired(false),
+  // )
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("sampler")
+  //     .setDescription("Choose a sampler")
+  //     .setChoices(...samplerChoices),
+  // )
 
-    .addStringOption((option) =>
-      option
-        .setName("style")
-        .setDescription("Choose a style")
-        .setChoices(...externalChoice)
-        .setRequired(false),
-    )
-    .addBooleanOption((option) =>
-      option
-        .setName("prompt_enhance")
-        .setDescription("Whether technical qualities of the prompt should be handled by the bot")
-        .setRequired(false),
-    )
-    .addIntegerOption((option) =>
-      option
-        .setName("prompt_enhance_seed")
-        .setDescription("Set a custom seed, the same seed will always generate the same enhanced prompt")
-        .setRequired(false),
-    )
-    .addIntegerOption((option) =>
-      option
-        .setName("guidance")
-        .setDescription("Change how much the AI follows your prompt")
-        .setChoices(...guidanceScaleChoices)
-        .setRequired(false),
-    )
-    .addStringOption((option) =>
-      option.setName("negative_prompt").setDescription("Concepts to remove from the output").setRequired(false),
-    )
-    .addBooleanOption((option) =>
-      option.setName("fix_faces").setDescription("Uses a model to fix faces").setRequired(false),
-    )
-    .addBooleanOption((option) =>
-      option.setName("upscale").setDescription("Uses a model to upscale an image").setRequired(false),
-    )
-    .addIntegerOption((option) =>
-      option
-        .setName("seed")
-        .setDescription("Set a custom seed, the same seed will always generate the same images")
-        .setRequired(false),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("img_url")
-        .setDescription("Supply a url to a image to use text-guided image-to-image translation")
-        .setRequired(false),
-    )
-    .addNumberOption((option) =>
-      option
-        .setName("img_strength")
-        .setDescription("Requires img_url: How strongly to follow to the image prompt")
-        .setMinValue(0)
-        .setMaxValue(1)
-        .setRequired(false),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("mask_prompt")
-        .setDescription("Requires img_url: Use a prompt to select an image mask")
-        .setRequired(false),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("mask_mode")
-        .setDescription("Requires mask_prompt: Keep the mask or replace it")
-        .setChoices(...maskModeOptions)
-        .setRequired(false),
-    );
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("style")
+  //     .setDescription("Choose a style")
+  //     .setChoices(...externalChoice)
+  //     .setRequired(false),
+  // )
+  // .addBooleanOption((option) =>
+  //   option
+  //     .setName("prompt_enhance")
+  //     .setDescription("Whether technical qualities of the prompt should be handled by the bot")
+  //     .setRequired(false),
+  // )
+  // .addIntegerOption((option) =>
+  //   option
+  //     .setName("prompt_enhance_seed")
+  //     .setDescription("Set a custom seed, the same seed will always generate the same enhanced prompt")
+  //     .setRequired(false),
+  // )
+  // .addIntegerOption((option) =>
+  //   option
+  //     .setName("guidance")
+  //     .setDescription("Change how much the AI follows your prompt")
+  //     .setChoices(...guidanceScaleChoices)
+  //     .setRequired(false),
+  // )
+  // .addStringOption((option) =>
+  //   option.setName("negative_prompt").setDescription("Concepts to remove from the output").setRequired(false),
+  // )
+  // .addBooleanOption((option) =>
+  //   option.setName("fix_faces").setDescription("Uses a model to fix faces").setRequired(false),
+  // )
+  // .addBooleanOption((option) =>
+  //   option.setName("upscale").setDescription("Uses a model to upscale an image").setRequired(false),
+  // )
+  // .addIntegerOption((option) =>
+  //   option
+  //     .setName("seed")
+  //     .setDescription("Set a custom seed, the same seed will always generate the same images")
+  //     .setRequired(false),
+  // )
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("img_url")
+  //     .setDescription("Supply a url to a image to use text-guided image-to-image translation")
+  //     .setRequired(false),
+  // )
+  // .addNumberOption((option) =>
+  //   option
+  //     .setName("img_strength")
+  //     .setDescription("Requires img_url: How strongly to follow to the image prompt")
+  //     .setMinValue(0)
+  //     .setMaxValue(1)
+  //     .setRequired(false),
+  // )
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("mask_prompt")
+  //     .setDescription("Requires img_url: Use a prompt to select an image mask")
+  //     .setRequired(false),
+  // )
+  // .addStringOption((option) =>
+  //   option
+  //     .setName("mask_mode")
+  //     .setDescription("Requires mask_prompt: Keep the mask or replace it")
+  //     .setChoices(...maskModeOptions)
+  //     .setRequired(false),
+  // );
 }
 
 export const draw = addDrawOptions(

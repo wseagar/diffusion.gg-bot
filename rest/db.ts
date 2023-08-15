@@ -1,20 +1,8 @@
 import { AnonymousGuild, Guild, User } from "discord.js";
-import pg from "pg";
 import { PrismaClient } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime";
 
 const prisma = new PrismaClient();
-
-console.log(process.env.DB_SSL);
-
-export const pool = new pg.Pool({
-  user: process.env.DB_USERNAME,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT),
-  ssl: process.env.DB_SSL === "TRUE" ? true : false,
-});
 
 type JobTypes = "txt2img" | "img2img";
 
@@ -319,6 +307,19 @@ async function setJobMessageId(id: string, discord_message_id: string) {
   await prisma.jobs.update({ data: { discord_message_id }, where: { id } });
 }
 
+async function completeJob(id: string, imageUris: string[]) {
+  await prisma.jobs.update({ data: { done: true }, where: { id } });
+  for (const uri of imageUris) {
+    await prisma.images.create({
+      data: {
+        job_id: id,
+        nsfw: false,
+        uri,
+      },
+    });
+  }
+}
+
 async function devCompleteJob(id: string) {
   await prisma.jobs.update({ data: { done: true }, where: { id } });
   await prisma.images.create({
@@ -350,7 +351,7 @@ async function devCompleteDescribeJob(id: string) {
 async function cleanupOldJobs() {
   await prisma.$queryRaw`
     UPDATE jobs 
-    SET done = false
+    SET done = true
     WHERE "created_at" < NOW() - INTERVAL '3 minutes' and done = false;`;
 }
 
@@ -376,4 +377,5 @@ export {
   canCreateNewJob,
   cleanupOldJobs,
   prevalidatePrompt,
+  completeJob,
 };

@@ -6,15 +6,9 @@ import * as AdminCommands from "./commands/admin";
 import * as CommonCommands from "./commands/common";
 import * as DrawCommands from "./commands/draw";
 
-const commands = [
-  AdminCommands.nsfwFilter,
-  CommonCommands.help,
-  CommonCommands.prompt_guide,
-  CommonCommands.credits,
-  DrawCommands.draw,
-  DrawCommands.drawOne,
-  DrawCommands.describe,
-].map((command) => command.toJSON());
+const commands = [CommonCommands.help, CommonCommands.prompt_guide, DrawCommands.draw].map((command) =>
+  command.toJSON(),
+);
 
 const clientId = process.env.DISCORD_CLIENT_ID as string;
 const token = process.env.DISCORD_TOKEN as string;

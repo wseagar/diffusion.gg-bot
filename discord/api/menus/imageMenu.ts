@@ -62,20 +62,29 @@ export async function selectImageMenu(interaction: ButtonInteraction<CacheType>)
     }
   } else {
     await interaction.deferReply({ ephemeral: true });
-    const buttons: ButtonBuilder[] = [];
+    const buttonRows: ActionRowBuilder<ButtonBuilder>[] = [];
+    let buttons: ButtonBuilder[] = [];
+
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
       const button = new ButtonBuilder()
         .setCustomId(`${type}|${job.id}|${image.id}`)
         .setLabel(`Image #${i + 1}`)
         .setStyle(ButtonStyle.Secondary);
+
       buttons.push(button);
+
+      // If we have 5 buttons, or this is the last image, create a new row
+      if (buttons.length === 5 || i === images.length - 1) {
+        const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
+        buttonRows.push(buttonRow);
+        buttons = []; // Reset the buttons for the next row
+      }
     }
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
     await interaction.editReply({
       content: `Choose image to ${type}`,
-      components: [buttonRow],
+      components: buttonRows,
     });
   }
 }
