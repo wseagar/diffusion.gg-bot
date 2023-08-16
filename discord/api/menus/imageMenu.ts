@@ -74,8 +74,9 @@ export async function selectImageMenu(interaction: ButtonInteraction<CacheType>)
 
       buttons.push(button);
 
-      // If we have 5 buttons, or this is the last image, create a new row
-      if (buttons.length === 5 || i === images.length - 1) {
+      // If we have 4 buttons, or this is the last image, create a new row
+      // default 8 images get made, this looks better
+      if (buttons.length === 4 || i === images.length - 1) {
         const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
         buttonRows.push(buttonRow);
         buttons = []; // Reset the buttons for the next row

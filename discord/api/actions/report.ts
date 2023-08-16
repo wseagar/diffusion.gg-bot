@@ -14,29 +14,32 @@ export async function processReport(interaction: ButtonInteraction<CacheType>) {
   }
 
   await interaction.deferReply({ ephemeral: true });
-  let embeds = interaction.message.embeds.map((embed, idx) => {
-    if (!embed.image) {
-      return {
-        title: embed.title as string,
-        url: embed.url as string,
-        color: Colors.Orange,
-        description: embed.description as string,
-      };
-    } else
-      return {
-        color: Colors.Orange,
-        image: {
-          url: embed.image?.url,
-        },
-      };
+  let attachments = interaction.message.attachments.map((attachment, idx) => {
+    return attachment
   });
+  // let embeds = interaction.message.embeds.map((embed, idx) => {
+  //   if (!embed.image) {
+  //     return {
+  //       title: embed.title as string,
+  //       url: embed.url as string,
+  //       color: Colors.Orange,
+  //       description: embed.description as string,
+  //     };
+  //   } else
+  //     return {
+  //       color: Colors.Orange,
+  //       image: {
+  //         url: embed.image?.url,
+  //       },
+  //     };
+  // });
   const baseEmbed = {
     color: Colors.Orange,
     title: "⚠️ Flagged",
     url: interaction.message.url,
     description: `<@${interaction.user.id}> has flagged a generation`,
   };
-  embeds.unshift(baseEmbed);
+  // embeds.unshift(baseEmbed);
 
   try {
     const channel = (await interaction.client.channels.fetch(
@@ -47,7 +50,8 @@ export async function processReport(interaction: ButtonInteraction<CacheType>) {
       return;
     }
     channel.send({
-      embeds: embeds,
+      embeds: [baseEmbed],
+      files: attachments,
       components: [createFlaggedForReviewRow(interaction.message.id, interaction.channel.id)],
     });
     await interaction.editReply("This generation was flagged for review");

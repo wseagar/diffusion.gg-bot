@@ -11,6 +11,7 @@ import {
   ModalSubmitInteraction,
   APIEmbed,
   JSONEncodable,
+  AttachmentBuilder
 } from "discord.js";
 import "dotenv/config";
 import {
@@ -40,6 +41,24 @@ import { getHelpEmbed } from "../lib/messages";
 import { randomIntFromInterval } from "./utils";
 import { makeBuyCreditsButtons } from "./payment";
 import { discord_servers, discord_users, jobs } from "@prisma/client";
+import fetch from 'node-fetch';
+
+async function fetchImageFile(url: string, idx: number) {
+
+  try {
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const imageBuffer = await response.buffer();
+      const attachment = new AttachmentBuilder(imageBuffer, { name: `dreamlookai-generated-image-${idx}.png` })
+      return attachment
+    } else {
+      return null
+    }
+  } catch (error) {
+    return null
+  }
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -111,14 +130,14 @@ async function drew(
     if (pressed >= 50) {
       const member =
         interaction.guild?.members.cache.get(interaction.user.id) ||
-        (await interaction.guild?.members.fetch(interaction.user.id).catch((err) => {}));
+        (await interaction.guild?.members.fetch(interaction.user.id).catch((err) => { }));
       const roleToGive = interaction.guild?.roles.cache.get("1020995638118330408") as Role;
       if (!roleToGive) return console.log("The role does not exist.");
       member?.roles.add(roleToGive).catch((error) => console.log(error));
     } else if (pressed >= 200) {
       const member =
         interaction.guild?.members.cache.get(interaction.user.id) ||
-        (await interaction.guild?.members.fetch(interaction.user.id).catch((err) => {}));
+        (await interaction.guild?.members.fetch(interaction.user.id).catch((err) => { }));
       const roleToGive = interaction.guild?.roles.cache.get("1020995882805624912") as Role;
       if (!roleToGive) return console.log("The role does not exist.");
       member?.roles.add(roleToGive).catch((error) => console.log(error));
@@ -386,7 +405,7 @@ export async function generateImage(options: GenerateImageOptionsNew) {
       num_inference_steps: 20,
       enable_hrf: false,
       scheduler_type: "dpm++",
-      seed: 42,
+      seed: -1,
       model_type: "sd-v1",
       guidance_scale: 7.5,
       base_model: "cyberrealistic-v3-1",
@@ -450,7 +469,7 @@ export async function generateImage(options: GenerateImageOptionsNew) {
       n_samples: n_samples,
       width: 512,
       height: 512,
-      seed: 42,
+      seed: -1,
       type: "dreamlook",
       discord_user: interaction.user.id,
       discord_name: interaction.user.username,
@@ -563,27 +582,35 @@ export async function generateImage(options: GenerateImageOptionsNew) {
   // components.push(Buttons.tweakingRow);
   components.push(infoRow);
 
-  const embeds = imageUrls.map((img, idx) => {
-    let blocked = false;
-    // if (dbUser.nsfw_filter) {
-    //   blocked = imageNSFW[idx];
-    // }
-
-    if (blocked) {
-      return {
-        color: Colors.Blurple,
-        description:
-          "This image has been blocked because it was detected to be **NSFW Content**.\nA Diffusion.gg subscription is required to view NSFW content.\nUse `/credits` for more info.",
-      };
+  let attachments: any = [];
+  const promiseAttachments = imageUrls.map(async (img, idx) => {
+    const fetchedAttachment = await fetchImageFile(img, idx);
+    if (fetchedAttachment) {
+      return attachments.push(fetchedAttachment)
     }
-
-    return {
-      color: Colors.Blurple,
-      image: {
-        url: img,
-      },
-    };
   });
+
+  // const embeds = imageUrls.map((img, idx) => {
+  //   let blocked = false;
+  //   // if (dbUser.nsfw_filter) {
+  //   //   blocked = imageNSFW[idx];
+  //   // }
+
+  //   if (blocked) {
+  //     return {
+  //       color: Colors.Blurple,
+  //       description:
+  //         "This image has been blocked because it was detected to be **NSFW Content**.\nA Diffusion.gg subscription is required to view NSFW content.\nUse `/credits` for more info.",
+  //     };
+  //   }
+
+  //   return {
+  //     color: Colors.Blurple,
+  //     image: {
+  //       url: img,
+  //     },
+  //   };
+  // });
   // if (options.image_url) {
   //   const baseEmbed = {
   //     color: Colors.Blurple,
@@ -594,10 +621,22 @@ export async function generateImage(options: GenerateImageOptionsNew) {
   //   embeds.unshift(baseEmbed);
   // }
 
+  await Promise.all(promiseAttachments);
+
+  attachments.sort((a: AttachmentBuilder, b: AttachmentBuilder) => {
+    if (a.name && b.name) {
+      const aNumber = parseInt(a.name.match(/\d+/)![0]);
+      const bNumber = parseInt(b.name.match(/\d+/)![0]);
+
+      return aNumber - bNumber;
+    }
+  });
+
   const followup = await interaction.followUp({
     content: replyBase,
     components: components,
-    embeds: embeds,
+    // embeds: resolvedEmbeds,
+    files: attachments,
   });
   // await drew(interaction);
   await setJobMessageId(diffusionJobId, followup.id);
