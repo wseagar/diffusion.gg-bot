@@ -68,7 +68,7 @@ export async function selectImageMenu(interaction: ButtonInteraction<CacheType>)
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
       const button = new ButtonBuilder()
-        .setCustomId(`${type}|${job.id}|${image.id}`)
+        .setCustomId(`${type}|${job.id}|${image.id}|${i}`)
         .setLabel(`Image #${i + 1}`)
         .setStyle(ButtonStyle.Secondary);
 

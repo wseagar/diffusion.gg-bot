@@ -10,8 +10,8 @@ export async function processShowcase(
   action: string,
 ) {
   console.log(interaction.customId);
-  const [_, jobId, imageId] = interaction.customId.split("|");
-  console.log(`showcase: job:${jobId}, img:${imageId}, chan:${channelID}, ${emoji}, ${response}, ${action}`);
+  const [_, jobId, imageId, imageIdx] = interaction.customId.split("|");
+  console.log(`showcase: job:${jobId}, img:${imageId}, imgIdx:${imageIdx} chan:${channelID}, ${emoji}, ${response}, ${action}`);
   await interaction.deferReply({ ephemeral: true });
   const job = await getJob(jobId);
   if (!job) {
@@ -36,12 +36,13 @@ export async function processShowcase(
   }
 
   const sourceMessage = await interaction.channel?.messages.fetch(job.discord_message_id as string);
+  var attachments = Array.from(sourceMessage ? sourceMessage.attachments.values() : interaction.message.attachments.values())
 
   const likeEmbed = new EmbedBuilder()
     .setColor("Blurple")
     .setTitle(emoji)
     .setURL(sourceMessage ? sourceMessage.url : interaction.message.url)
-    .setImage(image.uri)
+    .setImage(attachments[parseInt(imageIdx)] ? attachments[parseInt(imageIdx)].url : image.uri)
     .setDescription(`by <@${job.args.discord_user}>\n${action} by <@${interaction.user.id}>`)
     .setFooter({
       text: `Click the top ${emoji} to view the generation`,
