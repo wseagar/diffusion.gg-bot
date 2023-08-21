@@ -11,6 +11,9 @@ export async function processFlaggedRow(interaction: ButtonInteraction<CacheType
     if (!flaglogChannel) {
       return await interaction.editReply("The flag logging channel could not be found.");
     }
+    let attachments = interaction.message.attachments.map((attachment, idx) => {
+      return attachment
+    });
     let embeds = interaction.message.embeds.map((embed, idx) => {
       if (!embed.image) {
         if (embed.description?.includes("has flagged a generation")) {
@@ -45,6 +48,7 @@ export async function processFlaggedRow(interaction: ButtonInteraction<CacheType
     embeds.unshift(baseEmbed);
     flaglogChannel.send({
       embeds: embeds,
+      files: attachments,
     });
   }
 
